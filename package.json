@@ -1,6 +1,9 @@
 {
   "name": "@rumenpetrov/ai-chat-widget",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.0.3",
   "type": "module",
   "files": [
