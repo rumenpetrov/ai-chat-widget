@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.4
+
+### Patch Changes
+
+- Reduce dependencies
+
 ## 0.0.3
 
 ### Patch Changes

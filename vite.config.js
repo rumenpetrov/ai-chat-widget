@@ -1,6 +1,5 @@
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
-import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default defineConfig({
   build: {
@@ -28,11 +27,4 @@ export default defineConfig({
     // Clears the output directory before building
     emptyOutDir: true,
   },
-  plugins: [
-    {
-      ...nodeResolve(),
-      enforce: 'post',
-      apply: 'build',
-    },
-  ],
 })
