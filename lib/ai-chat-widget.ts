@@ -51,7 +51,7 @@ const chatCompletions = async (prompt: string | null): Promise<CompletionRespons
  * @csspart button - The button
  */
 @customElement('ai-chat-widget')
-class AIChatWidget extends LitElement {
+export class AIChatWidget extends LitElement {
   /**
    * The conversation
    */
@@ -132,3 +132,5 @@ declare global {
     'ai-chat-widget': AIChatWidget
   }
 }
+
+export default AIChatWidget;
