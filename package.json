@@ -35,5 +35,24 @@
   },
   "dependencies": {
     "@changesets/cli": "^2.27.5"
-  }
+  },
+  "description": "🚧 **Work in progress** 🚧 This is a native web component which provides basic AI chat functionality.",
+  "directories": {
+    "lib": "lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rumenpetrov/ai-chat-widget.git"
+  },
+  "keywords": [
+    "ai",
+    "chat",
+    "web-component"
+  ],
+  "author": "Rumen Petrov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rumenpetrov/ai-chat-widget/issues"
+  },
+  "homepage": "https://github.com/rumenpetrov/ai-chat-widget#readme"
 }
