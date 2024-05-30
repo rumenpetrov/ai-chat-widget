@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.3
+
+### Patch Changes
+
+- Trigger npm publish
+
 ## 0.0.2
 
 ### Patch Changes
