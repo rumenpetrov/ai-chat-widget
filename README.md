@@ -1,2 +1,6 @@
-# ai-chat-widget
-Configurable AI chat widget built as native web component
+# [Work in progress] AI chat widget
+This is a native web component which provides basic AI chat functionality.
+
+### Features
+* [ ] Embed in any website or web app
+* [ ] Provider selection
