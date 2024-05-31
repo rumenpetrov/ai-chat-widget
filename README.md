@@ -4,3 +4,19 @@
 ### Features
 * [ ] Embed in any website or web app
 * [ ] Provider selection
+
+## Get started
+
+1. Add the module to your website using CDN
+
+```html
+<script type="module" src="https://esm.sh/@rumenpetrov/ai-chat-widget/dist/ai-chat-widget.js"></script>
+```
+
+2. Use the web component somewhere on your page
+
+```html
+<acw-root></acw-root>
+```
+
+3. Make sure you select and configure your provider

@@ -1,6 +1,11 @@
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { LitElement, html, css, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import '@material/web/button/elevated-button.js';
 import '@material/web/button/filled-button.js';
+import '@material/web/iconbutton/outlined-icon-button.js';
+import '@material/web/select/outlined-select.js';
+import '@material/web/select/select-option.js';
+import '@material/web/textfield/outlined-text-field.js';
 
 /**
  * Modal
@@ -9,78 +14,103 @@ import '@material/web/button/filled-button.js';
  */
 @customElement('acw-settings')
 export class ACWSettings extends LitElement {
-  @property({ type: Boolean })
+  @property({ type: Boolean, reflect: true })
   open = false;
+
+  @state()
+  private _providerValue: string | null = null;
+
+  attributeChangedCallback(name: string, _old: string | null, value: string | null) {
+    if (name === 'open' && typeof value === 'string') {
+      // Using just the "open" attribute doesn't add backdrop - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog#open
+      this.renderRoot.querySelector('dialog')?.showModal();
+    } else if (name === 'open' && value === null) {
+      this.renderRoot.querySelector('dialog')?.close();
+    }
+  }
 
   render() {
     return html`
       <dialog
-        .open=${this.open}
+        ?open=${this.open}
         ?inert=${!this.open}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="confirmation-dialog-title"
-        aria-describedby="confirmation-dialog-description"
+        aria-labelledby="dialog-title"
+        aria-describedby="dialog-description"
         part="root"
+        @close=${this._handleClose}
       >
-        <form part="form">
-          <header class="header">
-            <h6 id="confirmation-dialog-title" class="title">Modal title</h6>
+        <form part="form" part="form" @submit=${this._handleSubmit}>
+          <header part="header">
+            <h6 id="dialog-title" part="title">Settings</h6>
 
-            <button
-              type="button"
-              class="button button-icon"
+            <md-outlined-icon-button
+              type="reset"
+              class="icon-button"
               @click=${this._handleClose}
-              >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <path d="M4.39705 4.55379L4.46967 4.46967C4.73594 4.2034 5.1526 4.1792 5.44621 4.39705L5.53033 4.46967L12 10.939L18.4697 4.46967C18.7626 4.17678 19.2374 4.17678 19.5303 4.46967C19.8232 4.76256 19.8232 5.23744 19.5303 5.53033L13.061 12L19.5303 18.4697C19.7966 18.7359 19.8208 19.1526 19.6029 19.4462L19.5303 19.5303C19.2641 19.7966 18.8474 19.8208 18.5538 19.6029L18.4697 19.5303L12 13.061L5.53033 19.5303C5.23744 19.8232 4.76256 19.8232 4.46967 19.5303C4.17678 19.2374 4.17678 18.7626 4.46967 18.4697L10.939 12L4.46967 5.53033C4.2034 5.26406 4.1792 4.8474 4.39705 4.55379L4.46967 4.46967L4.39705 4.55379Z" />
-              </svg>
-            </button>
+            >
+              <md-icon>✖️</md-icon>
+            </md-outlined-icon-button>
           </header>
 
-          <div class="content" id="confirmation-dialog-description">
-            <p>Modal body text goes here.</p>
+          <div part="content">
+            <p part="description" id="dialog-description">Select your AI provider and tweak the related settings.</p>
 
-            <div>
-              <label for="provider">Provider</label>
-              <select name="provider" id="provider">
-                <option value="">None</option>
-                <option value="local">Local server</option>
-                <option value="openai">Open AI API</option>
-              </select>
+            <div part="form-row">
+              <md-outlined-select name="provider" label="Provider" class="field-full" @change=${this._handleProviderChange}>
+                <md-select-option aria-label="blank" value="">None</md-select-option>
+                <md-select-option value="local" disabled>
+                  <div slot="headline">Local server</div>
+                </md-select-option>
+                <md-select-option value="openai" disabled>
+                  <div slot="headline">Open AI API</div>
+                </md-select-option>
+              </md-outlined-select>
             </div>
 
-            <div>
-              <label for="local-url">URL</label>
-              <input type="url" name="url" placeholder="http://localhost:1234/v1/" id="local-url" />
-            </div>
+            ${this._providerValue === 'local' ? html`
+              <div part="form-row">
+                <md-outlined-text-field type="url" name="url" label="API URL" placeholder="http://localhost:1234/v1/" class="field-full"></md-outlined-text-field>
+              </div>
+            ` : nothing}
 
-            <div>
-              <label for="openai-api-key">API keys</label>
-              <input type="text" name="token" placeholder="sk-...xx" id="openai-api-key" />
-            </div>
+            ${this._providerValue === 'openai' ? html`
+              <input type="hidden" name="url" value="https://api.openai.com/v1/" />
+            ` : nothing}
+
+            ${this._providerValue === 'openai' ? html`
+              <div part="form-row">
+                <md-outlined-text-field type="text" name="token" label="API key" placeholder="sk-...xx" class="field-full"></md-outlined-text-field>
+              </div>
+            ` : nothing}
           </div>
 
-          <footer class="footer">
-            <button
-              type="button"
-              class="button button-secondary"
-              @click=${this._handleClose}
-              >
-              Close
-            </button>
-
+          <footer part="footer">
+            <md-elevated-button type="reset" @click=${this._handleClose}>Cancel</md-elevated-button>
             <md-filled-button type="submit">Save changes</md-filled-button>
-            <!-- <button
-              type="submit"
-              class="button button-primary"
-              >
-              Save changes
-            </button> -->
           </footer>
         </form>
       </dialog>
     `;
+  }
+
+  private _handleProviderChange(event: Event) {
+    if (event.target && 'value' in event.target && typeof event.target.value === 'string') {
+      this._providerValue = event.target.value;
+    }
+  }
+
+  private _handleSubmit(event: FormDataEvent) {
+    event.preventDefault();
+
+    if (event.target && event.target instanceof HTMLFormElement) {
+      const formState = new FormData(event.target);
+      const nextProvider = formState.get('provider') as string | null;
+
+      console.log('formState', formState)
+      console.log('nextProvider', nextProvider)
+    }
   }
 
   private _handleClose = () => {
@@ -94,19 +124,49 @@ export class ACWSettings extends LitElement {
   }
 
   static styles = css`
-    :host {}
-    .header {}
-    .title {}
-    .content {}
-    .footer {}
-    .button {
-      padding: 4px;
+    :host {
+      display: block;
     }
-    svg {
-      display: inline-block;
-      width: 1em;
-      height: 1em;
-      fill: currentColor;
+    ::part(root) {
+      box-sizing: border-box;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate3d(-50%, -50%, 0);
+      margin: 0;
+      width: 60vw;
+      max-width: 600px;
+      min-width: 300px;
+      border: none;
+      border-radius: 8px;
+    }
+    ::part(header) {
+      display: flex;
+      align-items: center;
+    }
+    ::part(title) {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+    .icon-button {
+      margin-left: auto;
+    }
+    ::part(content) {
+      padding: 32px 0;
+    }
+    ::part(description) {
+      margin: 0;
+      padding-bottom: 8px;
+    }
+    ::part(footer) {
+      text-align: right;
+    }
+    ::part(form-row) {
+      margin: 16px 0;
+    }
+    .field-full {
+      width: 100%;
     }
   `
 }

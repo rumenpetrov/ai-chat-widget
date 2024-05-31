@@ -6,6 +6,8 @@ import '@material/web/button/elevated-button.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/textfield/outlined-text-field.js';
 import '@material/web/chips/assist-chip.js';
+import '@material/web/iconbutton/outlined-icon-button.js';
+import '@material/web/icon/icon.js';
 import './acw-settings.ts';
 
 /**
@@ -26,7 +28,9 @@ class ACWRoot extends LitElement {
           <md-assist-chip label="Assistant"></md-assist-chip>
         ` : nothing}
 
-        <p>${message.content}</p>
+        ${message.content.split("\n").map((paragraph) => html`
+          <p>${paragraph}</p>
+        `)}
       </div>
     `;
   }
@@ -34,26 +38,25 @@ class ACWRoot extends LitElement {
   render() {
     return html`
       <div ?inert=${Boolean(this._modalVariant)}>
-        <md-elevated-button type="button" @click=${() => { this._modalVariant = 'settings' }}>settings</md-elevated-button>
-        <!-- <button type="button" @click=${() => { this._modalVariant = 'settings' }}></button> -->
+        <md-outlined-icon-button
+          type="button"
+          @click=${() => { this._modalVariant = 'settings' }}
+        >
+          <md-icon>⚙️</md-icon>
+        </md-outlined-icon-button>
 
         ${Array.isArray(this._messages) && this._messages.length > 0
           ? this._messages.map((message: Message) => this.renderMessage(message))
           : nothing}
 
-        <form @submit=${this._handleSubmit}>
-          <md-outlined-text-field type="textarea" label="Prompt" name="prompt"></md-outlined-text-field>
+        <form @submit=${this._handleSubmit} class="prompt-form">
+          <md-outlined-text-field type="textarea" label="Prompt" name="prompt">
+            <md-icon slot="leading-icon">🪄</md-icon>
+          </md-outlined-text-field>
 
-          <!-- <label for="fieldPrompt">Prompt</label> -->
-          <!-- <textarea name="prompt" id="fieldPrompt"></textarea> -->
-
-          <md-filled-button type="submit">Ask AI</md-filled-button>
-          <!-- <button type="submit" part="button">
-            Ask AI
-          </button> -->
+          <md-filled-button type="submit">✨ Ask AI</md-filled-button>
         </form>
       </div>
-
 
       <acw-settings
         exportparts="root:settings-root,form:settings-form"
@@ -87,6 +90,10 @@ class ACWRoot extends LitElement {
   static styles = css`
     :host {
       display: block;
+      padding: 16px;
+    }
+    .prompt-form {
+      margin: 16px 0;
     }
     .message {
       padding: 8px;

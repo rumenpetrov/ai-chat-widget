@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.7
+
+### Patch Changes
+
+- Improve UI, work on settings and update docs
+
 ## 0.0.6
 
 ### Patch Changes
