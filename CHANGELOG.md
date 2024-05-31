@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.6
+
+### Patch Changes
+
+- Add settings and Material UI
+
 ## 0.0.5
 
 ### Patch Changes

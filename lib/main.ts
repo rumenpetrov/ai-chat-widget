@@ -1,2 +1,2 @@
-import AIChatWidget from './ai-chat-widget.ts';
-export { AIChatWidget };
+import ACWRoot from './components/acw-root.ts';
+export { ACWRoot };
