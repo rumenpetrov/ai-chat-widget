@@ -2,6 +2,8 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js'
 import { chatCompletions } from '../api/chat.ts';
 import type { Choice, Message } from '../api/chat.ts';
+import { supportsDB } from '../utilities/feature-detection.ts';
+import { getSystemSettings } from '../db/system-settings.ts';
 import '@material/web/button/elevated-button.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/textfield/outlined-text-field.js';
@@ -16,10 +18,24 @@ import './acw-settings.ts';
 @customElement('acw-root')
 class ACWRoot extends LitElement {
   @state()
+  private _requiredFeaturesAvailable: Boolean = false;
+
+  @state()
+  private _requiredSettingsAvailable: Boolean = false;
+
+  @state()
   private _messages: Message[] | null = null;
 
   @state()
   private _modalVariant: 'settings' | null = null;
+
+  async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+
+    this._requiredFeaturesAvailable = supportsDB();
+
+    this._requiredSettingsAvailable = await this._checkRequredSettings();
+  }
 
   renderMessage(message: Message) {
     return html`
@@ -35,15 +51,43 @@ class ACWRoot extends LitElement {
     `;
   }
 
+  renderSettings() {
+    return html`
+      <md-outlined-icon-button
+        type="button"
+        @click=${() => { this._modalVariant = 'settings' }}
+      >
+        <md-icon>⚙️</md-icon>
+      </md-outlined-icon-button>
+
+      <acw-settings
+        exportparts="root:settings-root,form:settings-form"
+        .open=${this._modalVariant === 'settings'}
+        @acw-settings--close=${this._handleSettingsClose}
+      ></acw-settings>
+    `;
+  }
+
   render() {
+    if (!this._requiredFeaturesAvailable) {
+      return html`
+        <p>This browser doesn't support the required features. Please upgrade to more modern browser.</p>
+      `;
+    }
+
+    if (!this._requiredSettingsAvailable) {
+      return html`
+        <div>
+          <p>Please configure settings first.</p>
+
+          ${this.renderSettings()}
+        </div>
+      `;
+    }
+
     return html`
       <div ?inert=${Boolean(this._modalVariant)}>
-        <md-outlined-icon-button
-          type="button"
-          @click=${() => { this._modalVariant = 'settings' }}
-        >
-          <md-icon>⚙️</md-icon>
-        </md-outlined-icon-button>
+        ${this.renderSettings()}
 
         ${Array.isArray(this._messages) && this._messages.length > 0
           ? this._messages.map((message: Message) => this.renderMessage(message))
@@ -57,13 +101,18 @@ class ACWRoot extends LitElement {
           <md-filled-button type="submit">✨ Ask AI</md-filled-button>
         </form>
       </div>
-
-      <acw-settings
-        exportparts="root:settings-root,form:settings-form"
-        .open=${this._modalVariant === 'settings'}
-        @acw-settings--close=${() => this._modalVariant = null}
-      ></acw-settings>
     `;
+  }
+
+  private async _handleSettingsClose() {
+    this._modalVariant = null;
+    this._requiredSettingsAvailable = await this._checkRequredSettings();
+  }
+
+  private async _checkRequredSettings() {
+    const systemSettings = await getSystemSettings();
+
+    return systemSettings?.provider === 'local' || systemSettings?.provider === 'openai';
   }
 
   private async _ask(prompt: string | null) {
@@ -73,6 +122,8 @@ class ACWRoot extends LitElement {
       this._messages = data?.choices?.map(
         (item: Choice) => item.message,
       );
+    } else {
+      alert('Error. There is a problem.')
     }
   }
 

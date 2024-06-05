@@ -1,5 +1,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { getSystemSettings, setSystemSettings } from '../db/system-settings.ts';
+import type { SystemSettings } from '../db/system-settings.ts';
+import capitalizeFirstLetter from '../utilities/capitalize-first-letter.ts';
 import '@material/web/button/elevated-button.js';
 import '@material/web/button/filled-button.js';
 import '@material/web/iconbutton/outlined-icon-button.js';
@@ -18,9 +21,35 @@ export class ACWSettings extends LitElement {
   open = false;
 
   @state()
-  private _providerValue: string | null = null;
+  private _formValueProvider: string = "none";
+
+  @state()
+  private _formValueLocalModel: string = "";
+
+  @state()
+  private _formValueLocalUrl: string = "";
+
+  @state()
+  private _formValueOpenaiModel: string = "";
+
+  @state()
+  private _formValueOpenaiToken: string = "";
+
+  get form() {
+    return this.renderRoot?.querySelector('form') ?? null;
+  }
+
+  async connectedCallback(): Promise<void> {
+    super.connectedCallback();
+
+    const systemSettings = await getSystemSettings();
+
+    this._resetFormState(systemSettings);
+  }
 
   attributeChangedCallback(name: string, _old: string | null, value: string | null) {
+    super.attributeChangedCallback(name, _old, value);
+
     if (name === 'open' && typeof value === 'string') {
       // Using just the "open" attribute doesn't add backdrop - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog#open
       this.renderRoot.querySelector('dialog')?.showModal();
@@ -41,12 +70,12 @@ export class ACWSettings extends LitElement {
         part="root"
         @close=${this._handleClose}
       >
-        <form part="form" part="form" @submit=${this._handleSubmit}>
+        <form part="form" part="form" @input=${this._handleFormChange} @submit=${this._handleSubmit}>
           <header part="header">
             <h6 id="dialog-title" part="title">Settings</h6>
 
             <md-outlined-icon-button
-              type="reset"
+              type="button"
               class="icon-button"
               @click=${this._handleClose}
             >
@@ -58,36 +87,85 @@ export class ACWSettings extends LitElement {
             <p part="description" id="dialog-description">Select your AI provider and tweak the related settings.</p>
 
             <div part="form-row">
-              <md-outlined-select name="provider" label="Provider" class="field-full" @change=${this._handleProviderChange}>
-                <md-select-option aria-label="blank" value="">None</md-select-option>
-                <md-select-option value="local" disabled>
+              <md-outlined-select
+                name="provider"
+                label="Provider"
+                class="field-full"
+                value=${this._formValueProvider}
+              >
+                <md-select-option aria-label="blank" value="none">None</md-select-option>
+                <md-select-option value="local">
                   <div slot="headline">Local server</div>
                 </md-select-option>
-                <md-select-option value="openai" disabled>
+                <md-select-option value="openai">
                   <div slot="headline">Open AI API</div>
                 </md-select-option>
               </md-outlined-select>
             </div>
 
-            ${this._providerValue === 'local' ? html`
+            ${this._formValueProvider === 'local' ? html`
               <div part="form-row">
-                <md-outlined-text-field type="url" name="url" label="API URL" placeholder="http://localhost:1234/v1/" class="field-full"></md-outlined-text-field>
+                <md-outlined-text-field
+                  type="text"
+                  name="localModel"
+                  required
+                  label="Model"
+                  placeholder="E.g. TheBloke/Mistral-7B-Instruct-v0.2-GGUF"
+                  class="field-full"
+                  value=${this._formValueLocalModel}
+                ></md-outlined-text-field>
               </div>
             ` : nothing}
 
-            ${this._providerValue === 'openai' ? html`
-              <input type="hidden" name="url" value="https://api.openai.com/v1/" />
+            ${this._formValueProvider === 'local' ? html`
+              <div part="form-row">
+                <md-outlined-text-field
+                  type="url"
+                  name="localUrl"
+                  required
+                  label="API URL"
+                  placeholder="E.g. http://localhost:1234/v1/"
+                  class="field-full"
+                  value=${this._formValueLocalUrl}
+                ></md-outlined-text-field>
+              </div>
             ` : nothing}
 
-            ${this._providerValue === 'openai' ? html`
+            ${this._formValueProvider === 'openai' ? html`
+              <input type="hidden" name="openaiUrl" value="https://api.openai.com/v1/" readOnly />
+            ` : nothing}
+
+            ${this._formValueProvider === 'openai' ? html`
               <div part="form-row">
-                <md-outlined-text-field type="text" name="token" label="API key" placeholder="sk-...xx" class="field-full"></md-outlined-text-field>
+                <md-outlined-text-field
+                  type="text"
+                  name="openaiModel"
+                  required
+                  label="Model"
+                  placeholder="E.g. gpt-3.5-turbo"
+                  class="field-full"
+                  value=${this._formValueOpenaiModel}
+                ></md-outlined-text-field>
+              </div>
+            ` : nothing}
+
+            ${this._formValueProvider === 'openai' ? html`
+              <div part="form-row">
+                <md-outlined-text-field
+                  type="text"
+                  name="openaiToken"
+                  required
+                  label="API key"
+                  placeholder="E.g. sk-...xx"
+                  class="field-full"
+                  value=${this._formValueOpenaiToken}
+                ></md-outlined-text-field>
               </div>
             ` : nothing}
           </div>
 
           <footer part="footer">
-            <md-elevated-button type="reset" @click=${this._handleClose}>Cancel</md-elevated-button>
+            <md-elevated-button type="button" @click=${this._handleClose}>Cancel</md-elevated-button>
             <md-filled-button type="submit">Save changes</md-filled-button>
           </footer>
         </form>
@@ -95,9 +173,35 @@ export class ACWSettings extends LitElement {
     `;
   }
 
-  private _handleProviderChange(event: Event) {
-    if (event.target && 'value' in event.target && typeof event.target.value === 'string') {
-      this._providerValue = event.target.value;
+  private _resetFormState(formState?: Object) {
+    if (formState) {
+      const formFieldNames = Object.keys(formState);
+
+      if (Array.isArray(formFieldNames) && formFieldNames.length > 0) {
+        formFieldNames.forEach((key: string) => {
+          // @ts-ignore
+          this._changeFieldStateByName(key, formState?.[key] || "");
+        })
+      }
+    }
+  }
+
+  private _changeFieldStateByName(name: string, value: string) {
+    const stateName = `_formValue${capitalizeFirstLetter(name)}`;
+
+    // @ts-ignore
+    this[stateName] = value;
+  }
+
+  private _handleFormChange(event: Event) {
+    if (
+      event.target
+      && 'name' in event.target
+      && typeof event.target.name === 'string'
+      && 'value' in event.target
+      && typeof event.target.value === 'string'
+    ) {
+      this._changeFieldStateByName(event.target.name, event.target.value);
     }
   }
 
@@ -105,11 +209,19 @@ export class ACWSettings extends LitElement {
     event.preventDefault();
 
     if (event.target && event.target instanceof HTMLFormElement) {
-      const formState = new FormData(event.target);
-      const nextProvider = formState.get('provider') as string | null;
+      const formState = Object.fromEntries(new FormData(event.target).entries()) as SystemSettings;
 
-      console.log('formState', formState)
-      console.log('nextProvider', nextProvider)
+      setSystemSettings(formState)
+        .then(response => {
+          this._handleClose();
+
+          return response;
+        })
+        .catch((error) => {
+          if (typeof error?.message === 'string') {
+            alert(error.message);
+          }
+        });
     }
   }
 

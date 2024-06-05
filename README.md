@@ -20,3 +20,9 @@
 ```
 
 3. Make sure you select and configure your provider
+
+### Technical stack
+* (Vite)[https://vitejs.dev/]
+* (Lit)[https://lit.dev/]
+* (Material web)[https://material-web.dev/]
+* (IndexDB wrapper)[https://github.com/jakearchibald/idb]

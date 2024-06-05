@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.8
+
+### Patch Changes
+
+- Local IndexDB setup and persistent system settings
+
 ## 0.0.7
 
 ### Patch Changes
