@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.10
+
+### Patch Changes
+
+- Improve bundling setup
+
 ## 0.0.9
 
 ### Patch Changes
