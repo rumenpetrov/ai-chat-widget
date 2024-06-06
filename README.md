@@ -20,8 +20,19 @@
 
 1. **Add the module to your website**
 
+##### With bundler
+```sh
+$ npm i @rumenpetrov/ai-chat-widget
+```
+
+```js
+// index.js
+import '@rumenpetrov/ai-chat-widget'
+```
+
+##### Use CDN for buldless approach
+
 ```html
-<!-- Use CDN for buildless approach -->
 <script type="module" src="https://esm.sh/@rumenpetrov/ai-chat-widget/dist/main.js"></script>
 ```
 

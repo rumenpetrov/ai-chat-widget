@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.11
+
+### Patch Changes
+
+- Update exports and docs, bundle with rollup
+
 ## 0.0.10
 
 ### Patch Changes
