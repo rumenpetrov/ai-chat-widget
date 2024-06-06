@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "type": "module",
   "files": [
     "dist"
@@ -25,7 +25,7 @@
     "release": "npm run build && changeset publish",
     "changeset": "changeset"
   },
-  "description": "🚧 **Work in progress** 🚧 This is a native web component which provides basic AI chat functionality.",
+  "description": "This is a native web component which provides basic AI chat functionality.",
   "directories": {
     "lib": "lib"
   },

@@ -239,7 +239,7 @@ export class ACWSettings extends LitElement {
     :host {
       display: block;
     }
-    ::part(root) {
+    :host::part(root) {
       box-sizing: border-box;
       position: fixed;
       top: 50%;
@@ -252,11 +252,11 @@ export class ACWSettings extends LitElement {
       border: none;
       border-radius: 8px;
     }
-    ::part(header) {
+    :host::part(header) {
       display: flex;
       align-items: center;
     }
-    ::part(title) {
+    :host::part(title) {
       margin: 0;
       font-size: 24px;
       line-height: 1.2;
@@ -264,17 +264,17 @@ export class ACWSettings extends LitElement {
     .icon-button {
       margin-left: auto;
     }
-    ::part(content) {
+    :host::part(content) {
       padding: 32px 0;
     }
-    ::part(description) {
+    :host::part(description) {
       margin: 0;
       padding-bottom: 8px;
     }
-    ::part(footer) {
+    :host::part(footer) {
       text-align: right;
     }
-    ::part(form-row) {
+    :host::part(form-row) {
       margin: 16px 0;
     }
     .field-full {

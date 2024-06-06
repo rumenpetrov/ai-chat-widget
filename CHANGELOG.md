@@ -1,5 +1,14 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.9
+
+### Patch Changes
+
+- UX improvements, theming and more docs
+  - Add UX improvements like messages and loaders
+  - Fix stylistic issue on Chrome and expose more elements
+  - Document features, privacy and theming
+
 ## 0.0.8
 
 ### Patch Changes

@@ -29,6 +29,9 @@ class ACWRoot extends LitElement {
   @state()
   private _modalVariant: 'settings' | null = null;
 
+  @state()
+  private _loading: boolean = false;
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
@@ -39,9 +42,11 @@ class ACWRoot extends LitElement {
 
   renderMessage(message: Message) {
     return html`
-      <div class="message">
+      <div part="message">
         ${message.role === 'assistant' ? html`
-          <md-assist-chip label="Assistant"></md-assist-chip>
+          <md-assist-chip label="Assistant">
+            <md-icon slot="icon">🤖</md-icon>
+          </md-assist-chip>
         ` : nothing}
 
         ${message.content.split("\n").map((paragraph) => html`
@@ -93,12 +98,26 @@ class ACWRoot extends LitElement {
           ? this._messages.map((message: Message) => this.renderMessage(message))
           : nothing}
 
-        <form @submit=${this._handleSubmit} class="prompt-form">
-          <md-outlined-text-field type="textarea" label="Prompt" name="prompt">
+        ${this._loading ? html`
+          <div part="pad">
+            <p>🫠 Brace yourself! It might take a while...</p>
+
+            <div part="loader"></div>
+          </div>
+        ` : nothing}
+
+        <form @submit=${this._handleSubmit} part="prompt-form">
+          <md-outlined-text-field
+            type="textarea"
+            label="Prompt"
+            name="prompt"
+            part="prompt"
+            ?disabled=${this._loading}
+          >
             <md-icon slot="leading-icon">🪄</md-icon>
           </md-outlined-text-field>
 
-          <md-filled-button type="submit">✨ Ask AI</md-filled-button>
+          <md-filled-button type="submit" ?disabled=${this._loading}>✨ Ask AI</md-filled-button>
         </form>
       </div>
     `;
@@ -116,14 +135,24 @@ class ACWRoot extends LitElement {
   }
 
   private async _ask(prompt: string | null) {
-    const data = await chatCompletions(prompt);
+    this._loading = true;
 
-    if (data && 'choices' in data && Array.isArray(data?.choices)) {
-      this._messages = data?.choices?.map(
-        (item: Choice) => item.message,
-      );
-    } else {
-      alert('Error. There is a problem.')
+    try {
+      const data = await chatCompletions(prompt);
+
+      if (data && 'choices' in data && Array.isArray(data?.choices)) {
+        this._messages = data?.choices?.map(
+          (item: Choice) => item.message,
+        );
+      } else {
+        alert('Error. There is a problem.')
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    } finally {
+      this._loading = false;
     }
   }
 
@@ -142,16 +171,63 @@ class ACWRoot extends LitElement {
     :host {
       display: block;
       padding: 16px;
+
+      --_md-sys-color-primary: var(--md-sys-color-primary, rgb(103, 80, 164));
     }
-    .prompt-form {
+    :host::part(prompt-form) {
+      display: flex;
+      gap: 16px;
+      align-items: center;
       margin: 16px 0;
     }
-    .message {
+    :host::part(prompt) {
+      flex: 1 1 auto;
+    }
+    :host::part(message) {
       padding: 8px;
       border-radius: 8px;
       margin: 16px 0;
-      background-color: #ddd;
+      background-color: color-mix(in oklab, currentcolor 20%, transparent);
       overflow-wrap: break-word;
+    }
+
+    :host::part(pad) {
+      padding: 16px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    :host::part(loader) {
+      height: 8px;
+      margin: 16px 0;
+      aspect-ratio: 4;
+      display: grid;
+    }
+
+    :host::part(loader)::before,
+    :host::part(loader)::after {
+      content: ' ';
+      grid-area: 1/1;
+      --_g: no-repeat radial-gradient(farthest-side, var(--_md-sys-color-primary) 94%, transparent);
+      background:
+        var(--_g) left,
+        var(--_g) right;
+      background-size: 25% 100%;
+      animation: l34 1s infinite;
+      transform: translate(var(--d,0)) rotate(0);
+    }
+
+    :host::part(loader)::after {
+      --d: 37.5%;
+      animation-delay: .5s;
+    }
+
+    @keyframes l34 {
+      50%,100% {
+        transform: translate(var(--d,0)) rotate(.5turn);
+      }
     }
   `
 }
