@@ -33,7 +33,7 @@ import '@rumenpetrov/ai-chat-widget'
 ##### Use CDN for buldless approach
 
 ```html
-<script type="module" src="https://esm.sh/@rumenpetrov/ai-chat-widget/dist/main.js"></script>
+<script type="module" src="https://esm.sh/@rumenpetrov/ai-chat-widget/dist/bundle.js"></script>
 ```
 
 2. **Get yourself a theme** - You could use [Material Theme Builder on the Web](https://material-foundation.github.io/material-theme-builder/) to generate all the CSS custom properties (design tokens) which the UI library we are using expects to function correctly and add them to you styles.

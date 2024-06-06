@@ -171,6 +171,7 @@ class ACWRoot extends LitElement {
     :host {
       display: block;
       padding: 16px;
+      text-align: left;
 
       --_md-sys-color-primary: var(--md-sys-color-primary, rgb(103, 80, 164));
     }

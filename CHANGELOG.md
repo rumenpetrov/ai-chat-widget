@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.12
+
+### Patch Changes
+
+- Maintenance tasks
+
 ## 0.0.11
 
 ### Patch Changes
