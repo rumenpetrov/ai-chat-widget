@@ -21,14 +21,14 @@ export type ApiError = {
 
 export type CompletionResponse = Completion | ApiError
 
-export const chatCompletions = async (prompt: string | null): Promise<CompletionResponse> => {
+export const chatCompletions = async (prompt: string | null) => {
   const api = await setupAPI();
 
   if (typeof prompt !== 'string' || prompt.length < 2) {
     return Promise.reject('There is a problem with the user input.');
   }
 
-  const response = await api('/chat/completions', {
+  return await api('/chat/completions', {
     method: 'POST',
     body: {
       messages: [
@@ -36,8 +36,7 @@ export const chatCompletions = async (prompt: string | null): Promise<Completion
         { 'role': 'user', 'content': prompt }
       ],
       temperature: 0.5,
-      stream: false
+      stream: true,
     },
   });
-  return await response.json();
 };

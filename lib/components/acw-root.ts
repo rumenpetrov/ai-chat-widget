@@ -2,7 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js'
 import { animate, fadeIn, fadeOut, flyBelow } from '@lit-labs/motion';
 import { chatCompletions } from '../api/chat.ts';
-import type { Choice, Message } from '../api/chat.ts';
+import type { Message } from '../api/chat.ts';
 import { supportsDB } from '../utilities/feature-detection.ts';
 import { getSystemSettings } from '../db/system-settings.ts';
 import '@material/web/button/elevated-button.js';
@@ -160,14 +160,36 @@ class ACWRoot extends LitElement {
     this._loading = true;
 
     try {
-      const data = await chatCompletions(prompt);
+      const response = await chatCompletions(prompt);
+      const decoder = new TextDecoder()
 
-      if (data && 'choices' in data && Array.isArray(data?.choices)) {
-        this._messages = data?.choices?.map(
-          (item: Choice) => item.message,
-        );
-      } else {
-        alert('Error. There is a problem.')
+      if (!response?.body) {
+        throw new Error('Failed to get response body');
+      }
+
+      // @ts-ignore
+      for await (const chunk of response.body) {
+        const decodedChunk = decoder.decode(chunk);
+
+        const lines = decodedChunk
+          .split('\n')
+          .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+          .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+          .map((line) => JSON.parse(line)); // Parse the JSON string
+
+        for (const line of lines) {
+          const content = line?.choices?.[0]?.delta?.content;
+
+          if (typeof content === 'string') {
+            const nextContent: string = `${this._messages?.[0]?.content || ''}${content}`;
+            this._messages = [
+              {
+                role: 'assistant',
+                content: nextContent,
+              }
+            ];
+          }
+        }
       }
     } catch (error) {
       if (error instanceof Error) {
