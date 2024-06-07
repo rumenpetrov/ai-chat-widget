@@ -1,5 +1,6 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js'
+import { animate, fadeIn, fadeOut, flyBelow } from '@lit-labs/motion';
 import { chatCompletions } from '../api/chat.ts';
 import type { Choice, Message } from '../api/chat.ts';
 import { supportsDB } from '../utilities/feature-detection.ts';
@@ -42,7 +43,17 @@ class ACWRoot extends LitElement {
 
   renderMessage(message: Message) {
     return html`
-      <div part="message">
+      <div
+        part="message"
+        ${animate({
+          keyframeOptions: {
+            fill: 'both',
+          },
+          in: fadeIn,
+          out: flyBelow,
+          stabilizeOut: true,
+        })}
+      >
         ${message.role === 'assistant' ? html`
           <md-assist-chip label="Assistant">
             <md-icon slot="icon">🤖</md-icon>
@@ -99,14 +110,24 @@ class ACWRoot extends LitElement {
           : nothing}
 
         ${this._loading ? html`
-          <div part="pad">
+          <div
+            part="pad"
+            ${animate({
+              keyframeOptions: {
+                fill: 'both',
+              },
+              in: fadeIn,
+              out: fadeOut,
+              stabilizeOut: true,
+            })}
+          >
             <p>🫠 Brace yourself! It might take a while...</p>
 
             <div part="loader"></div>
           </div>
         ` : nothing}
 
-        <form @submit=${this._handleSubmit} part="prompt-form">
+        <form @submit=${this._handleSubmit} part="prompt-form" ${animate()}>
           <md-outlined-text-field
             type="textarea"
             label="Prompt"
@@ -135,6 +156,7 @@ class ACWRoot extends LitElement {
   }
 
   private async _ask(prompt: string | null) {
+    this._messages = null;
     this._loading = true;
 
     try {

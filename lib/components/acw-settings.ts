@@ -249,7 +249,7 @@ export class ACWSettings extends LitElement {
       width: 60vw;
       max-width: 600px;
       min-width: 300px;
-      border: none;
+      border: 1px solid color-mix(in oklab, currentColor 70%, transparent);
       border-radius: 8px;
     }
     :host::part(header) {

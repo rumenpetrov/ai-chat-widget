@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.13
+
+### Patch Changes
+
+- Add motion animations to some elements
+
 ## 0.0.12
 
 ### Patch Changes
