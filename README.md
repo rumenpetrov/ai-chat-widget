@@ -12,7 +12,7 @@
 [See more](./preview/)
 
 ### 📋 Features
-* [ ] Integrate it in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
+* [x] Integrate it in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
 * [x] Provider selection - You could use [Open AI API](https://platform.openai.com/) or another local LLM server like [LM Studio](https://lmstudio.ai/) or [LocalAI](https://localai.io/)
 * [x] Theming - Could be customized and adapted to light/dark user preferences
 * [x] Stream responses - The response is shown to you at same time it is generated
@@ -39,7 +39,7 @@ $ npm i @rumenpetrov/ai-chat-widget
 import '@rumenpetrov/ai-chat-widget'
 ```
 
-##### Use CDN for buldless approach
+##### Use CDN for buildless approach
 
 ```html
 <script type="module" src="https://esm.sh/@rumenpetrov/ai-chat-widget/dist/bundle.js"></script>
