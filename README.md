@@ -6,8 +6,8 @@
 
 | | |
 |-|-|
-| ![mobile light capital](./public/preview/mobile-light-capital.png) | ![mobile dark capital](./public/preview/mobile-dark-capital.png)
-| ![mobile light provider settings](./public/preview/mobile-light-provider-settings.png) | ![mobile dark provider settings](./public/preview/mobile-dark-provider-settings.png) |
+| ![mobile light capital](./public/preview/standalone-mobile-light-capital.png) | ![mobile dark capital](./public/preview/standalone-mobile-dark-capital.png)
+| ![mobile light provider settings](./public/preview/standalone-mobile-light-provider-settings.png) | ![mobile dark provider settings](./public/preview/standalone-mobile-dark-provider-settings.png) |
 
 [See more](./public/preview/)
 
