@@ -1,5 +1,14 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.15
+
+### Patch Changes
+
+- Add markdown support
+  - Support for markdown output
+  - Syntax highlighting
+  - Preview images
+
 ## 0.0.14
 
 ### Patch Changes

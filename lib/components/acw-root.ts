@@ -1,6 +1,11 @@
 import { LitElement, html, css, nothing } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, state } from 'lit/decorators.js'
 import { animate, fadeIn, fadeOut, flyBelow } from '@lit-labs/motion';
+import DOMPurify from 'dompurify';
+import { Marked } from 'marked';
+import { markedHighlight } from 'marked-highlight';
+import hljs from 'highlight.js';
 import { chatCompletions } from '../api/chat.ts';
 import type { Message } from '../api/chat.ts';
 import { supportsDB } from '../utilities/feature-detection.ts';
@@ -33,6 +38,22 @@ class ACWRoot extends LitElement {
   @state()
   private _loading: boolean = false;
 
+  private _marked = new Marked(
+    markedHighlight({
+      langPrefix: 'hljs language-',
+      highlight(code, langDraft) {
+        const lang = langDraft
+          .replace('javascriptx', 'javascript')
+          .replace('jsx', 'javascript')
+          .replace('vue', 'javascript');
+
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+
+        return hljs.highlight(code, { language }).value;
+      }
+    })
+  )
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
@@ -42,6 +63,14 @@ class ACWRoot extends LitElement {
   }
 
   renderMessage(message: Message) {
+    if (typeof message.content !== 'string' || !this._marked) {
+      return nothing;
+    }
+
+    const dirtyContent: string = message.content;
+    // @ts-ignore
+    const cleanContent = DOMPurify.sanitize(this._marked.parse(dirtyContent));
+
     return html`
       <div
         part="message"
@@ -60,9 +89,9 @@ class ACWRoot extends LitElement {
           </md-assist-chip>
         ` : nothing}
 
-        ${message.content.split("\n").map((paragraph) => html`
-          <p>${paragraph}</p>
-        `)}
+        <div>
+          ${unsafeHTML(cleanContent)}
+        </div>
       </div>
     `;
   }
@@ -80,7 +109,7 @@ class ACWRoot extends LitElement {
         exportparts="root:settings-root,form:settings-form"
         .open=${this._modalVariant === 'settings'}
         @acw-settings--close=${this._handleSettingsClose}
-      ></acw-settings>
+        ></acw-settings>
     `;
   }
 
@@ -211,70 +240,149 @@ class ACWRoot extends LitElement {
     }
   }
 
-  static styles = css`
-    :host {
-      display: block;
-      padding: 16px;
-      text-align: left;
+  static styles = [
+    css`
+      :host {
+        display: block;
+        padding: 16px;
+        text-align: left;
 
-      --_md-sys-color-primary: var(--md-sys-color-primary, rgb(103, 80, 164));
-    }
-    :host::part(prompt-form) {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin: 16px 0;
-    }
-    :host::part(prompt) {
-      flex: 1 1 auto;
-    }
-    :host::part(message) {
-      padding: 8px;
-      border-radius: 8px;
-      margin: 16px 0;
-      background-color: color-mix(in oklab, currentcolor 20%, transparent);
-      overflow-wrap: break-word;
-    }
-
-    :host::part(pad) {
-      padding: 16px 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-
-    :host::part(loader) {
-      height: 8px;
-      margin: 16px 0;
-      aspect-ratio: 4;
-      display: grid;
-    }
-
-    :host::part(loader)::before,
-    :host::part(loader)::after {
-      content: ' ';
-      grid-area: 1/1;
-      --_g: no-repeat radial-gradient(farthest-side, var(--_md-sys-color-primary) 94%, transparent);
-      background:
-        var(--_g) left,
-        var(--_g) right;
-      background-size: 25% 100%;
-      animation: l34 1s infinite;
-      transform: translate(var(--d,0)) rotate(0);
-    }
-
-    :host::part(loader)::after {
-      --d: 37.5%;
-      animation-delay: .5s;
-    }
-
-    @keyframes l34 {
-      50%,100% {
-        transform: translate(var(--d,0)) rotate(.5turn);
+        --_md-sys-color-primary: var(--md-sys-color-primary, rgb(103, 80, 164));
       }
-    }
-  `
+      :host::part(prompt-form) {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin: 16px 0;
+      }
+      :host::part(prompt) {
+        flex: 1 1 auto;
+      }
+      :host::part(message) {
+        padding: 8px;
+        border-radius: 8px;
+        margin: 16px 0;
+        background-color: color-mix(in oklab, currentcolor 20%, transparent);
+        overflow-wrap: break-word;
+      }
+
+      :host::part(pad) {
+        padding: 16px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      :host::part(loader) {
+        height: 8px;
+        margin: 16px 0;
+        aspect-ratio: 4;
+        display: grid;
+      }
+
+      :host::part(loader)::before,
+      :host::part(loader)::after {
+        content: ' ';
+        grid-area: 1/1;
+        --_g: no-repeat radial-gradient(farthest-side, var(--_md-sys-color-primary) 94%, transparent);
+        background:
+          var(--_g) left,
+          var(--_g) right;
+        background-size: 25% 100%;
+        animation: l34 1s infinite;
+        transform: translate(var(--d,0)) rotate(0);
+      }
+
+      :host::part(loader)::after {
+        --d: 37.5%;
+        animation-delay: .5s;
+      }
+
+      @keyframes l34 {
+        50%,100% {
+          transform: translate(var(--d,0)) rotate(.5turn);
+        }
+      }
+    `,
+    /**
+     * Code highlight styles
+     */
+    css`
+      pre code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 1em
+      }
+      code.hljs {
+        padding: 3px 5px
+      }
+      /* Monokai Sublime style. Derived from Monokai by noformnocontent http://nn.mit-license.org/ */
+      .hljs {
+        background: #23241f;
+        color: #f8f8f2
+      }
+      .hljs-tag,
+      .hljs-subst {
+        color: #f8f8f2
+      }
+      .hljs-strong,
+      .hljs-emphasis {
+        color: #a8a8a2
+      }
+      .hljs-bullet,
+      .hljs-quote,
+      .hljs-number,
+      .hljs-regexp,
+      .hljs-literal,
+      .hljs-link {
+        color: #ae81ff
+      }
+      .hljs-code,
+      .hljs-title,
+      .hljs-section,
+      .hljs-selector-class {
+        color: #a6e22e
+      }
+      .hljs-strong {
+        font-weight: bold
+      }
+      .hljs-emphasis {
+        font-style: italic
+      }
+      .hljs-keyword,
+      .hljs-selector-tag,
+      .hljs-name,
+      .hljs-attr {
+        color: #f92672
+      }
+      .hljs-symbol,
+      .hljs-attribute {
+        color: #66d9ef
+      }
+      .hljs-params,
+      .hljs-title.class_,
+      .hljs-class .hljs-title {
+        color: #f8f8f2
+      }
+      .hljs-string,
+      .hljs-type,
+      .hljs-built_in,
+      .hljs-selector-id,
+      .hljs-selector-attr,
+      .hljs-selector-pseudo,
+      .hljs-addition,
+      .hljs-variable,
+      .hljs-template-variable {
+        color: #e6db74
+      }
+      .hljs-comment,
+      .hljs-deletion,
+      .hljs-meta {
+        color: #75715e
+      }
+    `,
+  ]
 }
 
 declare global {

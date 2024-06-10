@@ -4,10 +4,19 @@
 
 🚧 **Work in progress** 🚧 This is a native [web component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) which provides **basic** AI chat functionality (single question, no history).
 
+| | |
+|-|-|
+| ![mobile light capital](./public/preview/mobile-light-capital.png) | ![mobile dark capital](./public/preview/mobile-dark-capital.png)
+| ![mobile light provider settings](./public/preview/mobile-light-provider-settings.png) | ![mobile dark provider settings](./public/preview/mobile-dark-provider-settings.png) |
+
+[See more](./public/preview/)
+
 ### 📋 Features
-* [ ] Embed in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
+* [ ] Integrate it in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
 * [x] Provider selection - You could use [Open AI API](https://platform.openai.com/) or another local LLM server like [LM Studio](https://lmstudio.ai/) or [LocalAI](https://localai.io/)
 * [x] Theming - Could be customized and adapted to light/dark user preferences
+* [x] Stream responses - The response is shown to you at same time it is generated
+* [x] Syntax highlight for code snippets
 
 ### 🔒 Privacy
 
@@ -97,3 +106,5 @@ import '@rumenpetrov/ai-chat-widget'
 * [Lit](https://lit.dev/)
 * [Material web](https://material-web.dev/)
 * [IndexDB wrapper](https://github.com/jakearchibald/idb)
+* [Marked](https://marked.js.org/)
+* [highlight.js](https://highlightjs.org/)
