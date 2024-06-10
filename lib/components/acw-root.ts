@@ -54,6 +54,8 @@ class ACWRoot extends LitElement {
     })
   )
 
+  private _askController = new AbortController();
+
   async connectedCallback(): Promise<void> {
     super.connectedCallback();
 
@@ -84,8 +86,17 @@ class ACWRoot extends LitElement {
         })}
       >
         ${message.role === 'assistant' ? html`
-          <md-assist-chip label="Assistant">
+          <md-assist-chip label="Assistant" elevated>
             <md-icon slot="icon">🤖</md-icon>
+          </md-assist-chip>
+        ` : nothing}
+
+        ${this._loading ? html`
+          <md-assist-chip
+            label="Stop"
+            @click=${() => this._askController.abort()}
+          >
+            <md-icon slot="icon">🛑</md-icon>
           </md-assist-chip>
         ` : nothing}
 
@@ -131,7 +142,7 @@ class ACWRoot extends LitElement {
     }
 
     return html`
-      <div ?inert=${Boolean(this._modalVariant)}>
+      <div>
         ${this.renderSettings()}
 
         ${Array.isArray(this._messages) && this._messages.length > 0
@@ -187,9 +198,10 @@ class ACWRoot extends LitElement {
   private async _ask(prompt: string | null) {
     this._messages = null;
     this._loading = true;
+    this._askController = new AbortController();
 
     try {
-      const response = await chatCompletions(prompt);
+      const response = await chatCompletions(prompt, this._askController.signal);
       const decoder = new TextDecoder()
 
       if (!response?.body) {

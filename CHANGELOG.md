@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.17
+
+### Patch Changes
+
+- Abort requests functionality and UI tweaks
+
 ## 0.0.16
 
 ### Patch Changes

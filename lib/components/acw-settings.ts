@@ -252,6 +252,9 @@ export class ACWSettings extends LitElement {
       border: 1px solid color-mix(in oklab, currentColor 70%, transparent);
       border-radius: 8px;
     }
+    dialog::backdrop {
+      backdrop-filter: blur(1px);
+    }
     :host::part(header) {
       display: flex;
       align-items: center;

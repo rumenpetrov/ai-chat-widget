@@ -21,7 +21,7 @@ export type ApiError = {
 
 export type CompletionResponse = Completion | ApiError
 
-export const chatCompletions = async (prompt: string | null) => {
+export const chatCompletions = async (prompt: string | null, signal?: Object) => {
   const api = await setupAPI();
 
   if (typeof prompt !== 'string' || prompt.length < 2) {
@@ -38,5 +38,6 @@ export const chatCompletions = async (prompt: string | null) => {
       temperature: 0.5,
       stream: true,
     },
+    signal,
   });
 };
