@@ -6,10 +6,10 @@
 
 | | |
 |-|-|
-| ![mobile light capital](./public/preview/standalone-mobile-light-capital.png) | ![mobile dark capital](./public/preview/standalone-mobile-dark-capital.png)
-| ![mobile light provider settings](./public/preview/standalone-mobile-light-provider-settings.png) | ![mobile dark provider settings](./public/preview/standalone-mobile-dark-provider-settings.png) |
+| ![mobile light capital](./preview/standalone-mobile-light-capital.png) | ![mobile dark capital](./preview/standalone-mobile-dark-capital.png)
+| ![mobile light provider settings](./preview/standalone-mobile-light-provider-settings.png) | ![mobile dark provider settings](./preview/standalone-mobile-dark-provider-settings.png) |
 
-[See more](./public/preview/)
+[See more](./preview/)
 
 ### 📋 Features
 * [ ] Integrate it in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
