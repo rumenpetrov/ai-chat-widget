@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.16
+
+### Patch Changes
+
+- Add example applications and preview images
+
 ## 0.0.15
 
 ### Patch Changes
