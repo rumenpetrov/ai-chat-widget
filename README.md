@@ -4,9 +4,12 @@
 
 🚧 **Work in progress** 🚧 This is a native [web component](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) which provides **basic** AI chat functionality (single question, no history).
 
-![demo video](./preview/demo.mp4)
+| | |
+|-|-|
+| ![mobile light capital](preview/standalone-mobile-light-capital.png) | ![mobile dark capital](preview/standalone-mobile-dark-capital.png)
+| ![mobile light provider settings](preview/standalone-mobile-light-provider-settings.png) | ![mobile dark provider settings](preview/standalone-mobile-dark-provider-settings.png) |
 
-[See more](./preview/)
+[See more](preview/)
 
 ### 📋 Features
 * [x] Integrate it in your website - Use it in your vanilla website or with a framework which [supports](https://custom-elements-everywhere.com/) web components
