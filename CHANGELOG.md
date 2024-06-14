@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.18
+
+### Patch Changes
+
+- Add partial speech synthesis support
+
 ## 0.0.17
 
 ### Patch Changes

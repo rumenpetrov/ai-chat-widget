@@ -38,6 +38,12 @@ class ACWRoot extends LitElement {
   @state()
   private _loading: boolean = false;
 
+  @state()
+  private _speaking: boolean = false;
+
+  @state()
+  private _synth: SpeechSynthesis | null = null;
+
   private _marked = new Marked(
     markedHighlight({
       langPrefix: 'hljs language-',
@@ -62,6 +68,10 @@ class ACWRoot extends LitElement {
     this._requiredFeaturesAvailable = supportsDB();
 
     this._requiredSettingsAvailable = await this._checkRequredSettings();
+
+    if ('speechSynthesis' in window) {
+      this._synth = window.speechSynthesis;
+    }
   }
 
   renderMessage(message: Message) {
@@ -72,6 +82,7 @@ class ACWRoot extends LitElement {
     const dirtyContent: string = message.content;
     // @ts-ignore
     const cleanContent = DOMPurify.sanitize(this._marked.parse(dirtyContent));
+    const voicesAvailable = Boolean(this._synth?.getVoices().length)
 
     return html`
       <div
@@ -97,6 +108,27 @@ class ACWRoot extends LitElement {
             @click=${() => this._askController.abort()}
           >
             <md-icon slot="icon">🛑</md-icon>
+          </md-assist-chip>
+        ` : nothing}
+
+        ${!this._loading && this._synth && voicesAvailable && !this._speaking ? html`
+          <md-assist-chip
+            label="Speak"
+            @click=${this._speak}
+          >
+            <md-icon slot="icon">🔊</md-icon>
+          </md-assist-chip>
+        ` : nothing}
+
+        ${!this._loading && this._synth && voicesAvailable && this._speaking ? html`
+          <md-assist-chip
+            label="Speak"
+            @click=${() => {
+              this._synth?.cancel();
+              this._speaking = false;
+            }}
+          >
+            <md-icon slot="icon">🔇</md-icon>
           </md-assist-chip>
         ` : nothing}
 
@@ -249,6 +281,20 @@ class ACWRoot extends LitElement {
       const nextPrompt = formState.get('prompt') as string | null;
 
       this._ask(nextPrompt);
+    }
+  }
+
+  private _speak() {
+    if (this._synth && typeof this._messages?.[0]?.content === 'string') {
+      let utterance = new SpeechSynthesisUtterance(this._messages?.[0]?.content);
+      this._synth.speak(utterance);
+      this._speaking = true;
+
+      utterance.onend = () => {
+        this._speaking = false;
+      }
+    } else {
+      console.warn('There is a problem with the speak functionality.')
     }
   }
 
