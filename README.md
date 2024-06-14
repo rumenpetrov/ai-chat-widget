@@ -9,6 +9,7 @@
 | ![mobile light capital](preview/standalone-mobile-light-capital.png) | ![mobile dark capital](preview/standalone-mobile-dark-capital.png)
 | ![mobile light provider settings](preview/standalone-mobile-light-provider-settings.png) | ![mobile dark provider settings](preview/standalone-mobile-dark-provider-settings.png) |
 
+[Demo video](preview/demo.mp4)
 [See more](preview/)
 
 ### 📋 Features
