@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@rumenpetrov/ai-chat-widget": "^0.0.15",
+    "@rumenpetrov/ai-chat-widget": "^0.0.17",
     "react": "^19.0.0-rc-eb259b5d3b-20240605",
     "react-dom": "^19.0.0-rc-eb259b5d3b-20240605"
   },

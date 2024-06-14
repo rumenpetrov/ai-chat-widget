@@ -37,6 +37,9 @@ export const chatCompletions = async (prompt: string | null, signal?: Object) =>
       ],
       temperature: 0.5,
       stream: true,
+      stream_options: {
+        include_usage: true
+      }
     },
     signal,
   });
