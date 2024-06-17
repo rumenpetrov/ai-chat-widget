@@ -227,13 +227,24 @@ class ACWRoot extends LitElement {
     return systemSettings?.provider === 'local' || systemSettings?.provider === 'openai';
   }
 
+  private async _getSystemPrompt() {
+    const systemSettings = await getSystemSettings();
+
+    if (systemSettings && typeof systemSettings.systemPrompt === 'string') {
+      return systemSettings.systemPrompt;
+    }
+
+    return null;
+  }
+
   private async _ask(prompt: string | null) {
     this._messages = null;
     this._loading = true;
     this._askController = new AbortController();
 
     try {
-      const response = await chatCompletions(prompt, this._askController.signal);
+      const systemPrompt = await this._getSystemPrompt();
+      const response = await chatCompletions(prompt, systemPrompt, this._askController.signal);
       const decoder = new TextDecoder()
 
       if (!response?.body) {

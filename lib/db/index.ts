@@ -16,8 +16,10 @@ interface ACWDB extends DBSchema {
 const dbVersion = 1;
 export const setupDB = async () => {
   return await openDB<ACWDB>('acw-db', dbVersion, {
-    upgrade(db) {
-      db.createObjectStore('system-settings');
+    async upgrade(db) {
+      if (!db.objectStoreNames.contains('system-settings')) {
+        db.createObjectStore('system-settings');
+      }
     },
   });
 }

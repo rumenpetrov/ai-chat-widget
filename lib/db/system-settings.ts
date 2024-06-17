@@ -4,6 +4,7 @@ type Provider = 'none' | 'local' | 'openai';
 
 export type SystemSettings = {
   provider: Provider;
+  systemPrompt: string | null;
   localModel?: string | null;
   localUrl?: string | null;
   openaiModel?: string | null;

@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.19
+
+### Patch Changes
+
+- Expose system prompt as setting
+
 ## 0.0.18
 
 ### Patch Changes

@@ -24,6 +24,9 @@ export class ACWSettings extends LitElement {
   private _formValueProvider: string = "none";
 
   @state()
+  private _formValueSystemPrompt: string = "";
+
+  @state()
   private _formValueLocalModel: string = "";
 
   @state()
@@ -101,6 +104,18 @@ export class ACWSettings extends LitElement {
                   <div slot="headline">Open AI API</div>
                 </md-select-option>
               </md-outlined-select>
+            </div>
+
+            <div part="form-row">
+              <md-outlined-text-field
+                type="textarea"
+                name="systemPrompt"
+                required
+                label="System prompt"
+                placeholder="E.g. You are a personal assistant. Answer any questions as precise as you can. Keep your messages quick and short."
+                class="field-full"
+                value=${this._formValueSystemPrompt}
+              ></md-outlined-text-field>
             </div>
 
             ${this._formValueProvider === 'local' ? html`

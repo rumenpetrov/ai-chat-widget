@@ -21,7 +21,9 @@ export type ApiError = {
 
 export type CompletionResponse = Completion | ApiError
 
-export const chatCompletions = async (prompt: string | null, signal?: Object) => {
+const systemPromptFallback = 'You are a personal assistant. Answer any questions as precise as you can. Keep your messages quick and short.';
+
+export const chatCompletions = async (prompt: string | null, systemPrompt: string | null, signal?: Object) => {
   const api = await setupAPI();
 
   if (typeof prompt !== 'string' || prompt.length < 2) {
@@ -32,7 +34,7 @@ export const chatCompletions = async (prompt: string | null, signal?: Object) =>
     method: 'POST',
     body: {
       messages: [
-        { 'role': 'system', 'content': 'You are a personal assistant. Answer any questions as precise as you can. Keep your messages quick and short.' },
+        { 'role': 'system', 'content': systemPrompt || systemPromptFallback },
         { 'role': 'user', 'content': prompt }
       ],
       temperature: 0.5,
