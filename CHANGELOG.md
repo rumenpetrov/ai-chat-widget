@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.21
+
+### Patch Changes
+
+- Update the rest of the dependencies
+
 ## 0.0.20
 
 ### Patch Changes

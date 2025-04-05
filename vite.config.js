@@ -1,5 +1,5 @@
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
+import { resolve } from 'path';
+import { defineConfig } from 'vite';
 // import { nodeResolve } from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import summary from 'rollup-plugin-summary';
@@ -12,7 +12,7 @@ export default defineConfig({
       name: 'ai-chat-widget',
       // the proper extensions will be added
       fileName: 'main',
-      formats: ['es'],
+      formats: ['es', 'umd'],
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
