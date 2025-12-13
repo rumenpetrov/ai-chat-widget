@@ -23,7 +23,7 @@ export type CompletionResponse = Completion | ApiError
 
 const systemPromptFallback = 'You are a personal assistant. Answer any questions as precise as you can. Keep your messages quick and short.';
 
-export const chatCompletions = async (prompt: string | null, systemPrompt: string | null, signal?: Object) => {
+export const chatCompletions = async (prompt: string | null, systemPrompt: string | null, signal?: AbortSignal) => {
   const api = await setupAPI();
 
   if (typeof prompt !== 'string' || prompt.length < 2) {

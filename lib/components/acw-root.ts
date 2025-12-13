@@ -24,10 +24,10 @@ import './acw-settings.ts';
 @customElement('acw-root')
 class ACWRoot extends LitElement {
   @state()
-  private _requiredFeaturesAvailable: Boolean = false;
+  private _requiredFeaturesAvailable: boolean = false;
 
   @state()
-  private _requiredSettingsAvailable: Boolean = false;
+  private _requiredSettingsAvailable: boolean = false;
 
   @state()
   private _messages: Message[] | null = null;
@@ -40,6 +40,9 @@ class ACWRoot extends LitElement {
 
   @state()
   private _speaking: boolean = false;
+
+  @state()
+  private _error: string | null = null;
 
   @state()
   private _synth: SpeechSynthesis | null = null;
@@ -67,10 +70,20 @@ class ACWRoot extends LitElement {
 
     this._requiredFeaturesAvailable = supportsDB();
 
-    this._requiredSettingsAvailable = await this._checkRequredSettings();
+    this._requiredSettingsAvailable = await this._checkRequiredSettings();
 
     if ('speechSynthesis' in window) {
       this._synth = window.speechSynthesis;
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    
+    // Clean up: abort any ongoing requests and stop speech
+    this._askController.abort();
+    if (this._synth) {
+      this._synth.cancel();
     }
   }
 
@@ -80,8 +93,8 @@ class ACWRoot extends LitElement {
     }
 
     const dirtyContent: string = message.content;
-    // @ts-ignore
-    const cleanContent = DOMPurify.sanitize(this._marked.parse(dirtyContent));
+    const parsedMarkdown = this._marked.parse(dirtyContent) as string;
+    const cleanContent = DOMPurify.sanitize(parsedMarkdown);
     const voicesAvailable = Boolean(this._synth?.getVoices().length)
 
     return html`
@@ -181,6 +194,23 @@ class ACWRoot extends LitElement {
           ? this._messages.map((message: Message) => this.renderMessage(message))
           : nothing}
 
+        ${this._error ? html`
+          <div
+            part="error"
+            ${animate({
+              keyframeOptions: {
+                fill: 'both',
+              },
+              in: fadeIn,
+              out: fadeOut,
+              stabilizeOut: true,
+            })}
+          >
+            <p>❌ Error: ${this._error}</p>
+            <md-filled-button @click=${() => { this._error = null; }}>Dismiss</md-filled-button>
+          </div>
+        ` : nothing}
+
         ${this._loading ? html`
           <div
             part="pad"
@@ -218,10 +248,10 @@ class ACWRoot extends LitElement {
 
   private async _handleSettingsClose() {
     this._modalVariant = null;
-    this._requiredSettingsAvailable = await this._checkRequredSettings();
+    this._requiredSettingsAvailable = await this._checkRequiredSettings();
   }
 
-  private async _checkRequredSettings() {
+  private async _checkRequiredSettings() {
     const systemSettings = await getSystemSettings();
 
     return systemSettings?.provider === 'local' || systemSettings?.provider === 'openai';
@@ -240,6 +270,8 @@ class ACWRoot extends LitElement {
   private async _ask(prompt: string | null) {
     this._messages = null;
     this._loading = true;
+    this._error = null;
+    this._speaking = false; // Reset speaking state for new message
     this._askController = new AbortController();
 
     try {
@@ -251,33 +283,50 @@ class ACWRoot extends LitElement {
         throw new Error('Failed to get response body');
       }
 
-      // @ts-ignore
-      for await (const chunk of response.body) {
-        const decodedChunk = decoder.decode(chunk);
+      const reader = response.body.getReader();
+      
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          const decodedChunk = decoder.decode(value, { stream: true });
 
-        const lines = decodedChunk
-          .split('\n')
-          .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
-          .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
-          .map((line) => JSON.parse(line)); // Parse the JSON string
-
-        for (const line of lines) {
-          const content = line?.choices?.[0]?.delta?.content;
-
-          if (typeof content === 'string') {
-            const nextContent: string = `${this._messages?.[0]?.content || ''}${content}`;
-            this._messages = [
-              {
-                role: 'assistant',
-                content: nextContent,
+          const lines = decodedChunk
+            .split('\n')
+            .map((line) => line.replace(/^data: /, "").trim()) // Remove the "data: " prefix
+            .filter((line) => line !== "" && line !== "[DONE]") // Remove empty lines and "[DONE]"
+            .map((line) => {
+              try {
+                return JSON.parse(line);
+              } catch {
+                return null; // Skip invalid JSON lines
               }
-            ];
+            })
+            .filter((line) => line !== null);
+
+          for (const line of lines) {
+            const content = line?.choices?.[0]?.delta?.content;
+
+            if (typeof content === 'string') {
+              const nextContent: string = `${this._messages?.[0]?.content || ''}${content}`;
+              this._messages = [
+                {
+                  role: 'assistant',
+                  content: nextContent,
+                }
+              ];
+            }
           }
         }
+      } finally {
+        reader.releaseLock();
       }
     } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message);
+      // Don't show error if user aborted the request
+      if (error instanceof Error && error.name !== 'AbortError') {
+        this._error = error.message;
       }
     } finally {
       this._loading = false;
@@ -292,20 +341,28 @@ class ACWRoot extends LitElement {
       const nextPrompt = formState.get('prompt') as string | null;
 
       this._ask(nextPrompt);
+      
+      // Reset form after submission
+      event.target.reset();
     }
   }
 
   private _speak() {
     if (this._synth && typeof this._messages?.[0]?.content === 'string') {
-      let utterance = new SpeechSynthesisUtterance(this._messages?.[0]?.content);
+      const utterance = new SpeechSynthesisUtterance(this._messages[0].content);
       this._synth.speak(utterance);
       this._speaking = true;
 
       utterance.onend = () => {
         this._speaking = false;
-      }
+      };
+      
+      utterance.onerror = () => {
+        this._speaking = false;
+        console.warn('Speech synthesis error');
+      };
     } else {
-      console.warn('There is a problem with the speak functionality.')
+      console.warn('There is a problem with the speak functionality.');
     }
   }
 
@@ -333,6 +390,17 @@ class ACWRoot extends LitElement {
         margin: 16px 0;
         background-color: color-mix(in oklab, currentcolor 20%, transparent);
         overflow-wrap: break-word;
+      }
+
+      :host::part(error) {
+        padding: 16px;
+        border-radius: 8px;
+        margin: 16px 0;
+        background-color: color-mix(in oklab, red 20%, transparent);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
       }
 
       :host::part(pad) {
