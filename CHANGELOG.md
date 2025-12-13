@@ -1,5 +1,11 @@
 # @rumenpetrov/ai-chat-widget
 
+## 0.0.22
+
+### Patch Changes
+
+- Some quick wins
+
 ## 0.0.21
 
 ### Patch Changes
